@@ -21,15 +21,21 @@ void main() {
 class StudentRecordApp extends StatelessWidget {
   const StudentRecordApp({super.key});
 
-  static const Color primaryBlue = Color(0xFF1565C0);
-  static const Color accentTeal = Color(0xFF00897B);
+  // Palette: burgundy ink, rose accent, cream paper, gold highlight
+  static const Color primary = Color(0xFF7A1F3D);
+  static const Color accent = Color(0xFFE85D75);
+  static const Color gold = Color(0xFFF2B84B);
+  static const Color cream = Color(0xFFFFF8F0);
+  static const Color muted = Color(0xFF8A6F78);
+  static const Color blush = Color(0xFFF6D5DB);
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: primaryBlue,
-      primary: primaryBlue,
-      secondary: accentTeal,
+      seedColor: primary,
+      primary: primary,
+      secondary: accent,
+      surface: cream,
     );
 
     return MaterialApp(
@@ -37,7 +43,7 @@ class StudentRecordApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: scheme,
-        scaffoldBackgroundColor: const Color(0xFFF1F7FA),
+        scaffoldBackgroundColor: cream,
         appBarTheme: const AppBarTheme(
           foregroundColor: Colors.white,
           centerTitle: true,
@@ -54,16 +60,16 @@ class StudentRecordApp extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.blueGrey.shade100),
+            borderSide: BorderSide(color: blush),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: accentTeal, width: 2),
+            borderSide: const BorderSide(color: accent, width: 2),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: primaryBlue,
+            backgroundColor: primary,
             foregroundColor: Colors.white,
             minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
@@ -77,9 +83,9 @@ class StudentRecordApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: accentTeal,
+            foregroundColor: accent,
             minimumSize: const Size.fromHeight(52),
-            side: const BorderSide(color: accentTeal, width: 1.5),
+            side: const BorderSide(color: accent, width: 1.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
@@ -104,9 +110,9 @@ class GradientAppBarBackground extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [StudentRecordApp.primaryBlue, StudentRecordApp.accentTeal],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [StudentRecordApp.primary, Color(0xFFA32A55)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
       ),
     );

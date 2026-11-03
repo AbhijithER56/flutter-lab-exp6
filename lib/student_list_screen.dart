@@ -73,7 +73,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: StudentRecordApp.accentTeal,
+        backgroundColor: StudentRecordApp.accent,
         foregroundColor: Colors.white,
         onPressed: _openAddStudent,
         icon: const Icon(Icons.person_add_alt_1),
@@ -152,12 +152,12 @@ class _SummaryBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.teal.shade100),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: StudentRecordApp.blush),
       ),
       child: Row(
         children: [
-          const Icon(Icons.storage_rounded, color: StudentRecordApp.accentTeal),
+          const Icon(Icons.menu_book_rounded, color: StudentRecordApp.accent),
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
@@ -169,7 +169,7 @@ class _SummaryBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: const ShapeDecoration(
-              color: StudentRecordApp.primaryBlue,
+              color: StudentRecordApp.primary,
               shape: StadiumBorder(),
             ),
             child: Text(
@@ -196,64 +196,99 @@ class _StudentCard extends StatelessWidget {
     final String initial =
         student.name.isNotEmpty ? student.name[0].toUpperCase() : '?';
 
-    return Card(
-      elevation: 2,
-      color: Colors.white,
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: StudentRecordApp.blush),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: StudentRecordApp.primaryBlue,
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
+            // Burgundy ledger edge
+            Container(width: 6, color: StudentRecordApp.primary),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          student.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: StudentRecordApp.blush,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          color: StudentRecordApp.primary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  student.name,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                'ID ${student.id}',
+                                style: const TextStyle(
+                                  color: StudentRecordApp.muted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 6),
+                          // Department chip
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: StudentRecordApp.gold
+                                  .withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              student.department,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: StudentRecordApp.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          _InfoRow(
+                            icon: Icons.badge_outlined,
+                            text: student.registerNumber,
+                          ),
+                          _InfoRow(
+                              icon: Icons.email_outlined, text: student.email),
+                        ],
                       ),
-                      Text(
-                        'ID ${student.id}',
-                        style: TextStyle(
-                          color: Colors.blueGrey.shade400,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _InfoRow(
-                    icon: Icons.badge_outlined,
-                    text: student.registerNumber,
-                  ),
-                  _InfoRow(
-                    icon: Icons.apartment_outlined,
-                    text: student.department,
-                  ),
-                  _InfoRow(icon: Icons.email_outlined, text: student.email),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -275,12 +310,12 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: StudentRecordApp.accentTeal),
+          Icon(icon, size: 18, color: StudentRecordApp.accent),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: Colors.blueGrey.shade700),
+              style: TextStyle(color: StudentRecordApp.muted),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -309,7 +344,7 @@ class _MessageView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 72, color: Colors.teal.shade200),
+            Icon(icon, size: 72, color: StudentRecordApp.blush),
             const SizedBox(height: 16),
             Text(
               title,
@@ -320,7 +355,7 @@ class _MessageView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.blueGrey.shade500),
+              style: TextStyle(color: StudentRecordApp.muted),
             ),
           ],
         ),

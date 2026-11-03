@@ -116,7 +116,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         ..showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: StudentRecordApp.accentTeal,
+            backgroundColor: StudentRecordApp.accent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -180,7 +180,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: Icon(icon, color: StudentRecordApp.primaryBlue),
+          prefixIcon: Icon(icon, color: StudentRecordApp.primary),
         ),
       ),
     );
@@ -213,11 +213,11 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   const _HeaderBanner(),
                   const SizedBox(height: 20),
                   Card(
-                    elevation: 3,
-                    shadowColor: Colors.blue.withValues(alpha: 0.2),
+                    elevation: 0,
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(28),
+                      side: const BorderSide(color: StudentRecordApp.blush),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -303,17 +303,17 @@ class _HeaderBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          colors: [StudentRecordApp.primaryBlue, StudentRecordApp.accentTeal],
+          colors: [StudentRecordApp.primary, Color(0xFFA32A55)],
         ),
       ),
       child: const Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.school_rounded, color: Colors.white, size: 32),
+            backgroundColor: Colors.white12,
+            child: Icon(Icons.auto_stories_rounded, color: StudentRecordApp.gold, size: 32),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -321,7 +321,7 @@ class _HeaderBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Student Registration',
+                  'New Enrolment',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,

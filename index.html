@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Ledger – Experiment 6 | SQLite Persistence</title>
+  <meta name="description" content="Flutter Lab Experiment 6: student records saved and read back like an SQLite table (preview uses browser storage)." />
+  <style>
+    :root {
+      --wine: #7A1F3D; --wine2: #A32A55; --rose: #E85D75; --gold: #F2B84B;
+      --cream: #FFF8F0; --muted: #8A6F78; --blush: #F6D5DB; --ink: #2A1520;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #ecd9dc; color: var(--ink); min-height: 100vh;
+      padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .db-bar { background: var(--ink); color: #fff; border-radius: 20px; padding: 6px 16px; font-size: 12px; font-family: ui-monospace, Consolas, monospace; max-width: 100%; }
+    .db-bar b { color: var(--gold); }
+
+    .phone { width: 390px; max-width: 100%; height: 800px; background: var(--cream); border: 8px solid #1d0d14; border-radius: 34px; overflow: hidden; position: relative; box-shadow: 0 24px 60px rgba(122,31,61,.3); }
+    .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform .35s ease; }
+    #list { transform: translateX(100%); }
+    body.on-list #list { transform: none; }
+    body.on-list #add { transform: translateX(-30%); }
+
+    .app-bar { background: linear-gradient(90deg, var(--wine), var(--wine2)); color: #fff; padding: 18px 14px 14px; text-align: center; font-weight: 700; font-size: 19px; position: relative; flex-shrink: 0; }
+    .app-bar button { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+    .app-bar .l { left: 10px; } .app-bar .r { right: 10px; }
+    .scroll { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; }
+
+    .banner { background: linear-gradient(90deg, var(--wine), var(--wine2)); color: #fff; border-radius: 28px; padding: 20px; display: flex; gap: 14px; align-items: center; }
+    .ico { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+    .banner h1 { font-size: 20px; font-weight: 800; }
+    .banner p { font-size: 13px; color: rgba(255,255,255,.75); margin-top: 4px; }
+
+    form { background: #fff; border: 1px solid var(--blush); border-radius: 28px; padding: 22px 20px 6px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 4px 4px; }
+    .field input { width: 100%; padding: 14px; font-size: 15px; background: #fff; border: 1px solid #E8CFD5; border-radius: 14px; outline: none; color: var(--ink); }
+    .field input:focus { border: 2px solid var(--rose); padding: 13px; }
+    .field.bad input { border-color: #c1121f; }
+    .err { color: #c1121f; font-size: 12px; margin: 4px 0 0 4px; display: none; }
+    .field.bad .err { display: block; }
+    .btn { width: 100%; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .btn.save { background: var(--wine); color: #fff; border: none; }
+    .btn.view { background: transparent; color: var(--wine); border: 1.5px solid var(--wine); margin-top: 12px; }
+    .btn:active { transform: scale(.98); }
+
+    .summary { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--blush); border-radius: 22px; padding: 14px 16px; margin: 16px 16px 8px; font-weight: 600; font-size: 13px; }
+    .summary span.t { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pill { background: var(--wine); color: #fff; border-radius: 20px; padding: 6px 14px; font-weight: 600; white-space: nowrap; }
+    .records { flex: 1; overflow-y: auto; padding: 4px 16px 12px; scrollbar-width: thin; }
+    .card { display: flex; background: #fff; border: 1px solid var(--blush); border-radius: 22px; overflow: hidden; margin: 8px 0; }
+    .card .edge { width: 6px; background: var(--wine); flex-shrink: 0; }
+    .card .body { display: flex; gap: 14px; padding: 16px; flex: 1; min-width: 0; }
+    .av { width: 48px; height: 48px; border-radius: 14px; background: var(--blush); color: var(--wine); font-weight: 900; font-size: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .top { display: flex; justify-content: space-between; align-items: baseline; }
+    .top b { font-size: 17px; font-weight: 800; }
+    .top small { color: var(--muted); font-size: 12px; }
+    .chip { align-self: flex-start; background: rgba(242,184,75,.28); color: var(--wine); border-radius: 10px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .line { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .empty { text-align: center; color: var(--muted); padding: 50px 24px; }
+    .empty b { display: block; color: var(--ink); font-size: 18px; margin: 10px 0 6px; }
+    .back-wrap { padding: 8px 16px 16px; }
+    .back-wrap .btn { width: 160px; background: transparent; color: var(--wine); border: 1.5px solid var(--wine); }
+    .fab { position: absolute; right: 16px; bottom: 76px; background: var(--rose); color: #fff; border: none; border-radius: 18px; padding: 14px 18px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(232,93,117,.4); }
+
+    .snack { position: absolute; left: 16px; right: 16px; bottom: 16px; background: var(--rose); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 13px; transform: translateY(90px); transition: transform .3s; z-index: 9; }
+    .snack.show { transform: none; }
+  </style>
+</head>
+<body>
+  <div class="db-bar" id="sql">student_database.db › <b>students</b> — ready</div>
+
+  <div class="phone">
+    <!-- Add Student -->
+    <section class="screen" id="add">
+      <div class="app-bar">Add Student<button class="r" id="toList" title="View Students">📋</button></div>
+      <div class="scroll">
+        <div class="banner">
+          <div class="ico">📖</div>
+          <div><h1>New Enrolment</h1><p>Records are stored in the SQLite database "student_database.db".</p></div>
+        </div>
+        <form id="form" novalidate>
+          <div class="field" data-f="name"><label>Student Name</label><input id="name" placeholder="Yokesh" autocomplete="off" /><div class="err"></div></div>
+          <div class="field" data-f="reg"><label>Registration Number</label><input id="reg" placeholder="e.g. RA2211003010123" autocomplete="off" /><div class="err"></div></div>
+          <div class="field" data-f="dept"><label>Department</label><input id="dept" placeholder="e.g. Computer Science" autocomplete="off" /><div class="err"></div></div>
+          <div class="field" data-f="email"><label>Email Address</label><input id="email" placeholder="e.g. Yokesh@gmail.com" autocomplete="off" /><div class="err"></div></div>
+        </form>
+        <div>
+          <button class="btn save" id="save">💾 Save Student</button>
+          <button class="btn view" id="view">👥 View Students</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Records -->
+    <section class="screen" id="list">
+      <div class="app-bar"><button class="l" id="toAdd" title="Back">←</button>Student Records<button class="r" id="refresh" title="Refresh">⟳</button></div>
+      <div class="summary"><span>📚</span><span class="t">student_database.db › students</span><span class="pill" id="count">0 record(s)</span></div>
+      <div class="records" id="records"></div>
+      <div class="back-wrap"><button class="btn" id="back">← Back</button></div>
+      <button class="fab" id="fab">＋ Add Student</button>
+    </section>
+
+    <div class="snack" id="snack"></div>
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const KEY = 'campus_ledger_students';
+  let snackTimer;
+
+  // "Table" kept in localStorage so records survive a reload (like the .db file)
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return memory; } }
+  let memory = [];
+  function store(rows) { memory = rows; try { localStorage.setItem(KEY, JSON.stringify(rows)); } catch (e) {} }
+
+  // Same patterns and messages as the Dart validators
+  const rx = {
+    name: /^[A-Za-z][A-Za-z .']*$/, reg: /^[A-Za-z0-9/-]+$/,
+    dept: /^[A-Za-z][A-Za-z .&()-]*$/, email: /^[\w.+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+  };
+  const rules = {
+    name: v => !v ? 'Please enter the student name.' : v.length < 3 ? 'Name must have at least 3 characters.'
+      : !rx.name.test(v) ? 'Name can contain only letters, spaces and dots.' : null,
+    reg: v => !v ? 'Please enter the registration number.' : !rx.reg.test(v) ? 'Use letters, digits, "/" or "-" only (no spaces).' : null,
+    dept: v => !v ? 'Please enter the department.' : !rx.dept.test(v) ? 'Department can contain only letters and spaces.' : null,
+    email: v => !v ? 'Please enter the email address.' : !rx.email.test(v) ? 'Enter a valid email address (e.g. name@example.com).' : null,
+  };
+
+  function showSql(text) { $('sql').innerHTML = 'student_database.db › <b>students</b> — ' + text; }
+  function toast(msg) {
+    $('snack').textContent = '✔ ' + msg; $('snack').classList.add('show');
+    clearTimeout(snackTimer); snackTimer = setTimeout(() => $('snack').classList.remove('show'), 2200);
+  }
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function validate(live) {
+    let ok = true;
+    for (const k of Object.keys(rules)) {
+      const msg = rules[k]($(k).value.trim());
+      const f = document.querySelector(`[data-f="${k}"]`);
+      f.classList.toggle('bad', !!msg); f.querySelector('.err').textContent = msg || '';
+      if (msg) ok = false;
+    }
+    return ok;
+  }
+
+  // CREATE
+  function save() {
+    if (!validate()) return;
+    const rows = load();
+    const id = rows.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+    const row = { id, name: $('name').value.trim(), register_number: $('reg').value.trim().toUpperCase(),
+                  department: $('dept').value.trim(), email: $('email').value.trim().toLowerCase() };
+    rows.push(row); store(rows);
+    showSql(`INSERT INTO students (name, register_number, department, email) VALUES (?, ?, ?, ?)`);
+    ['name', 'reg', 'dept', 'email'].forEach(k => $(k).value = '');
+    document.querySelectorAll('.field').forEach(f => { f.classList.remove('bad'); f.querySelector('.err').textContent = ''; });
+    toast(`${row.name} saved successfully (ID: ${id}).`);
+  }
+
+  // READ
+  function render() {
+    const rows = load().sort((a, b) => b.id - a.id);
+    showSql('SELECT * FROM students ORDER BY id DESC');
+    $('count').textContent = rows.length + ' record(s)';
+    $('records').innerHTML = rows.length ? rows.map(r => `
+      <div class="card"><div class="edge"></div><div class="body">
+        <div class="av">${esc(r.name[0].toUpperCase())}</div>
+        <div class="info">
+          <div class="top"><b>${esc(r.name)}</b><small>ID ${r.id}</small></div>
+          <span class="chip">${esc(r.department)}</span>
+          <div class="line">🪪 ${esc(r.register_number)}</div>
+          <div class="line">✉️ ${esc(r.email)}</div>
+        </div></div></div>`).join('')
+      : '<div class="empty">📭<b>No student records available</b>Tap "Add Student" to register the first student.</div>';
+  }
+
+  const goList = () => { render(); document.body.classList.add('on-list'); };
+  const goAdd = () => document.body.classList.remove('on-list');
+
+  $('save').onclick = save;
+  $('form').addEventListener('submit', e => { e.preventDefault(); save(); });
+  $('form').addEventListener('input', e => { if (document.querySelector('.field.bad')) validate(); });
+  ['view', 'toList'].forEach(id => $(id).onclick = goList);
+  ['toAdd', 'back', 'fab'].forEach(id => $(id).onclick = goAdd);
+  $('refresh').onclick = render;
+</script>
+</body>
+</html>
